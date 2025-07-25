@@ -202,7 +202,7 @@ If you use this code or theory in your research, please consider citing the foll
    *Proceedings of the Institution of Mechanical Engineers, Part D: Journal of Automobile Engineering, 2020*  
    [DOI: 10.1177/0954407020940823](https://doi.org/10.1177/0954407020940823)
 
-The mass matrix \( \mathbf{M(q)} \) is defined as:
+
 
 ## How to Run  
 1. Clone this repository:  
