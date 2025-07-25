@@ -113,6 +113,38 @@ We don’t modify 'Jc' directly for damping affected motion (if lateral resistan
 | Hard constraint (no slip)         | ✅ Yes       | ❌ No                            |
 | Soft resistance (viscous damping) | ❌ No        | ✅ Yes                           |
 
+Here is the properly formatted version of your explanation for a GitHub `README.md` file using LaTeX-style math within markdown code blocks (using MathJax, which GitHub does **not natively support**, but this formatting will keep it clean and understandable for technical readers):
+
+---
+
+### 🧮 Viscous Damping in the Dynamic Model
+
+In the dynamic model, the general form is:
+
+```math
+M \ddot{q} + C(q, \dot{q}) + G = \tau + J^\top \lambda
+```
+
+To incorporate **viscous damping** (e.g., lateral ground resistance for each wheel), we include an additional damping torque term:
+
+```math
+M \ddot{q} + C(q, \dot{q}) + G + \tau_{\text{damping}} = \tau + J^\top \lambda
+```
+
+Where the damping torque is given by:
+
+```math
+\tau_{\text{damping}} = \sum_{\text{wheels}} J_{\text{lat}, i}^\top \left( -b_i \cdot J_{\text{lat}, i} \dot{q} \right)
+```
+
+* $J_{\text{lat}, i}$: Jacobian projecting velocity onto the lateral direction of wheel $i$
+* $b_i$: Damping coefficient (viscous resistance) for wheel $i$
+
+This approach **introduces lateral resistance** in a physically consistent way, without violating the structure of the dynamic equations.
+
+---
+
+
 
 ---
 
