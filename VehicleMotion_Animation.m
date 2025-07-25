@@ -6,10 +6,10 @@ wheel_width = 0.15;
 car_height = 0.05;
 sim_speed = 4;
 
-% save_gif = true;  % Toggle to save as GIF
+save_gif = true;  % Toggle to save as GIF
 % save_vid = true; % Toggle to save as mpeg
 
-save_gif = false;  % Toggle to save as GIF
+% save_gif = false;  % Toggle to save as GIF
 save_vid = false; % Toggle to save as mpeg
 
 
@@ -186,16 +186,17 @@ end
 
 if save_gif
 
+    o_f_name = AutoRename(cd,strcat(filename,'.gif'));
     delay = 0.05;                   % Delay time between frames (in seconds)
     for idx = 1:f_count-1
         [A_map, map] = rgb2ind(im2{idx}, 256); % Convert RGB to indexed image
 
         if idx == 1
             % Create the GIF file
-            imwrite(A_map, map, strcat(filename,'.gif'), 'gif', 'LoopCount', Inf, 'DelayTime', delay);
+            imwrite(A_map, map, o_f_name, 'gif', 'LoopCount', Inf, 'DelayTime', delay);
         else
             % Append to the existing GIF
-            imwrite(A_map, map, strcat(filename,'.gif'), 'gif', 'WriteMode', 'append', 'DelayTime', delay);
+            imwrite(A_map, map, o_f_name, 'gif', 'WriteMode', 'append', 'DelayTime', delay);
         end
     end
 

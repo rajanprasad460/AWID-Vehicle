@@ -11,6 +11,8 @@ g = 9.81;           % Gravity (m/s^2)
 R = 0.3;            % Wheel radius (m)
 l = 1.2;            % Half length of vehicle (front-rear)
 w = 0.75;           % Half width of vehicle (left-right)
+lat_damp = -200;  % N·s/m, per wheel lateral damping coefficient 
+n_wheel = 6;
 
 % ====== Spoke parameters ======
 nw = 6;      % Number of spokes
@@ -29,13 +31,13 @@ qd0(1) = 0.0;
 yo = [q0; qd0];  % Combine initial positions and velocities
 
 % Pack parameters into a vector matching matlabFunction order
-params  = [mb; mw; Ibx; Iby; Ibz; Iw; g; R; l; w];
+params  = [mb; mw; Ibx; Iby; Ibz; Iw; g; R; l; w; lat_damp; n_wheel];
 
 % Torque function (adjusted to 6 wheels)
-tau_func = @(t) 10*[0;0;0;0;0;0; 1; 0.5; 1; 0.1; 1; 0.21];
+tau_func = @(t) 10*[0;0;0;0;0;0; 1; -0.1; 1; -1; 1; -0.1];
 
 % ODE function (carDynamics must compute dy = [qd; qdd])
-f = @(t, y) carDynamics(t, y, tau_func, mb, mw, Ibx, Iby, Ibz, Iw, g, R, l, w);
+f = @(t, y) carDynamics(t, y, tau_func, params);
 
 % Time simulation setup
 dt = 0.01;
@@ -51,20 +53,20 @@ av_mode = 1;
 yout(1,:) = yo;
 
 % Get Jacobians
-[J,Jdot] = AllLegs_contactRolling_J_and_Jdot(q0, qd0, params);
+[J,~,~] = AllLegs_contactRolling_J_and_Jdot(q0, qd0, params);
 [ml,~] = size(J);
 lambda_out = zeros(ml,ia);
-Sys_Input = zeros(12,ia);
+Sys_Input = zeros(ml,ia);
 
 % ------------------------- [3] Simulation Loop -------------------------
 for i = 1:ia-1
     y = yo;
     t = ts(i);
 
-    [k1, lambda_out(:,i), Sys_Input(:,i)] = carDynamics(t, y, tau_func, mb, mw, Ibx, Iby, Ibz, Iw, g, R, l, w);
-    k2 = carDynamics(t + dt/2, y + dt/2 * k1, tau_func, mb, mw, Ibx, Iby, Ibz, Iw, g, R, l, w);
-    k3 = carDynamics(t + dt/2, y + dt/2 * k2, tau_func, mb, mw, Ibx, Iby, Ibz, Iw, g, R, l, w);
-    k4 = carDynamics(t + dt, y + dt * k3, tau_func, mb, mw, Ibx, Iby, Ibz, Iw, g, R, l, w);
+    [k1, lambda_out(:,i), Sys_Input(:,i)] = carDynamics(t, y, tau_func, params);
+    k2 = carDynamics(t + dt/2, y + dt/2 * k1, tau_func, params);
+    k3 = carDynamics(t + dt/2, y + dt/2 * k2, tau_func, params);
+    k4 = carDynamics(t + dt, y + dt * k3, tau_func, params);
 
     Y1 = y + (dt/6) * (k1 + 2*k2 + 2*k3 + k4);
 
