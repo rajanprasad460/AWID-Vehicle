@@ -11,7 +11,7 @@ g = 9.81;           % Gravity (m/s^2)
 R = 0.3;            % Wheel radius (m)
 l = 1.2;            % Half length of vehicle (front-rear)
 w = 0.75;           % Half width of vehicle (left-right)
-lat_damp = -200;  % N·s/m, per wheel lateral damping coefficient 
+lat_damp = -200*0;  % N·s/m, per wheel lateral damping coefficient 
 n_wheel = 6;
 
 % ====== Spoke parameters ======
