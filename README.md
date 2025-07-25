@@ -104,6 +104,16 @@ Each wheel contributes:
 - Normal constraint:  
   $\mathbf{e}_{\text{vertical}}^\top \mathbf{J}_i = 0$
 
+
+
+We don’t modify 'Jc' directly for damping affected motion (if lateral resistance is to be considered) — instead:
+
+| Feature                           | Add to `Jc` | Add to `τ` (generalized forces) |
+| --------------------------------- | ----------- | ------------------------------- |
+| Hard constraint (no slip)         | ✅ Yes       | ❌ No                            |
+| Soft resistance (viscous damping) | ❌ No        | ✅ Yes                           |
+
+
 ---
 
 ## 📂 Exported MATLAB Functions
