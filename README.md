@@ -113,7 +113,6 @@ We don’t modify 'Jc' directly for damping affected motion (if lateral resistan
 | Hard constraint (no slip)         | ✅ Yes       | ❌ No                            |
 | Soft resistance (viscous damping) | ❌ No        | ✅ Yes                           |
 
-Here is the properly formatted version of your explanation for a GitHub `README.md` file using LaTeX-style math within markdown code blocks (using MathJax, which GitHub does **not natively support**, but this formatting will keep it clean and understandable for technical readers):
 
 ---
 
