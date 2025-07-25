@@ -150,3 +150,13 @@ If you use this code or theory in your research, please consider citing the foll
 
 The mass matrix \( \mathbf{M(q)} \) is defined as:
 
+## How to Run  
+1. Clone this repository:  
+   ```bash
+   git clone https://github.com/rajanprasad460/AWID-Vehicle.git
+   ```
+2. Open MATLAB and navigate to the project folder.  
+3. Run:  
+   ```matlab
+   Car_simulator
+   ```
