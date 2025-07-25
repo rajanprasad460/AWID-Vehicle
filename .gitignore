@@ -39,3 +39,8 @@
 
 # debug information files
 *.dwo
+
+# Ignore uploading video files
+*.avi
+*.mp4
+*.asv
