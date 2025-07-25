@@ -16,7 +16,20 @@ The control allocation is formulated as a quadratic programming optimization pro
 
 In the thesis, **MATLAB - ADMAS** cosimulation was performed. Here I am trying to develop a **Matlab** model for better control application. 
 
-![AWID Vehicle Animation](six_wheel_animation.gif)
+**Without and With lateral Resistance**
+<table>
+  <tr>
+    <td align="center">
+      <img src="six_wheel_animation.gif" width="500"/><br/>
+      <b>No Lateral Resistance</b>
+    </td>
+    <td align="center">
+      <img src="six_wheel_animation-1.gif" width="500"/><br/>
+      <b>Lateral Resistance</b>
+    </td>
+  </tr>
+</table>
+
 
 ---
 
