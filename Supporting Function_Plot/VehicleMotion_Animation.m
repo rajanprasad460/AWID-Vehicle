@@ -6,11 +6,11 @@ wheel_width = 0.15;
 car_height = 0.05;
 sim_speed = 4;
 
-save_gif = true;  % Toggle to save as GIF
+% save_gif = true;  % Toggle to save as GIF
 % save_vid = true; % Toggle to save as mpeg
 
 % save_gif = false;  % Toggle to save as GIF
-save_vid = false; % Toggle to save as mpeg
+% save_vid = false; % Toggle to save as mpeg
 
 
 
@@ -174,7 +174,9 @@ end
 %% ============== Export to GIF /Video ===
 % ------------------------- [7] Video Export -------------------------
 if save_vid
-    v = VideoWriter(filename,'Motion JPEG AVI');
+    f_filename = AutoRename(fullfile(cd,'Output Results'),strcat(filename,'.avi'));
+
+    v = VideoWriter(f_filename,'Motion JPEG AVI');
     v.Quality=100;
     v.FrameRate = 3; % No. of frames per second
     open(v);
@@ -186,7 +188,7 @@ end
 
 if save_gif
 
-    o_f_name = AutoRename(cd,strcat(filename,'.gif'));
+    o_f_name = AutoRename(fullfile(cd,'Output Results'),strcat(filename,'.gif'));
     delay = 0.05;                   % Delay time between frames (in seconds)
     for idx = 1:f_count-1
         [A_map, map] = rgb2ind(im2{idx}, 256); % Convert RGB to indexed image

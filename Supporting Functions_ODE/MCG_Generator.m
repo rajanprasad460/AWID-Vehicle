@@ -69,6 +69,7 @@ T_wheel_rot = 0;
 z_all = sym(zeros(n,1));
 
 
+
 e_rolling = R_body * [1; 0; 0];
 e_lateral = R_body * [0; 1; 0];
 e_vertical = R_body * [0; 0; 1];
@@ -77,9 +78,10 @@ key_idx = [1 3];
 
 % Jaocbians
 
-Jc_all = sym(zeros(length(key_idx),nq));
-Jdot_c_all = sym(zeros(length(key_idx),nq));
-Jc_lat_all = sym(zeros(1,nq));
+Jc_all = sym(zeros(length(key_idx)*n,nq));
+Jdot_c_all = sym(zeros(length(key_idx)*n,nq));
+Jc_Total_i = sym(zeros(3,nq));
+Jc_Total = sym(zeros(3*n,nq));
 
 for i = 1:n
     r_i = hub_coords{i};
@@ -96,14 +98,16 @@ for i = 1:n
             e_lateral.' * J_i;
             e_vertical.' * J_i];
     
-    Jc_lat_i = Jc_i(2,:);
+    Jc_Total_i = [e_rolling.' * J_i ;
+                e_lateral.' * J_i;
+                e_vertical.' * J_i];
 
     Jc_i = Jc_i(key_idx,:);
 
     % Stack the Jacobians
     Jc_all((i-1)*length(key_idx)+1:(i*length(key_idx)),:) = Jc_i;
 
-    Jc_lat_all(i,:) = Jc_lat_i;
+    Jc_Total((i-1)*3+1:(i*3),:) = Jc_Total_i;
     
     % Compute Jdot
     mJ = size(Jc_i,1);
@@ -171,7 +175,7 @@ matlabFunction(M, 'Vars', {vars_q, params}, 'File', 'M_matrix_func');
 matlabFunction(C, 'Vars', {vars_q, vars_qd, params}, 'File', 'C_vector_func');
 matlabFunction(G, 'Vars', {vars_q, params}, 'File', 'G_vector_func');
 
-matlabFunction(Jc_all, Jdot_c_all, Jc_lat_all, ...
+matlabFunction(Jc_all, Jdot_c_all, Jc_Total, ...
     'Vars', {vars_q, vars_qd, params}, ...
     'File', 'AllLegs_contactRolling_J_and_Jdot', ...
-    'Outputs', {'Jc', 'Jdot_c', 'Jc_lat_all'});
+    'Outputs', {'Jc', 'Jdot_c', 'Jc_Total'});

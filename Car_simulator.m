@@ -11,7 +11,8 @@ g = 9.81;           % Gravity (m/s^2)
 R = 0.3;            % Wheel radius (m)
 l = 1.2;            % Half length of vehicle (front-rear)
 w = 0.75;           % Half width of vehicle (left-right)
-lat_damp = -200*0;  % N·s/m, per wheel lateral damping coefficient 
+lat_damp = -800*0;    % N·s/m, per wheel lateral damping coefficient
+roll_damp = -10*1;      % damp_roll (N·s/m) per wheel  [5 for general, 10 for roungh]
 n_wheel = 6;
 
 % ====== Spoke parameters ======
@@ -31,10 +32,10 @@ qd0(1) = 0.0;
 yo = [q0; qd0];  % Combine initial positions and velocities
 
 % Pack parameters into a vector matching matlabFunction order
-params  = [mb; mw; Ibx; Iby; Ibz; Iw; g; R; l; w; lat_damp; n_wheel];
+params  = [mb; mw; Ibx; Iby; Ibz; Iw; g; R; l; w; lat_damp; roll_damp; n_wheel];
 
 % Torque function (adjusted to 6 wheels)
-tau_func = @(t) 10*[0;0;0;0;0;0; 1; -0.1; 1; -1; 1; -0.1];
+tau_func = @(t) 10*[0;0;0;0;0;0; 1; 1; 1; 1; 1; 1];
 
 % ODE function (carDynamics must compute dy = [qd; qdd])
 f = @(t, y) carDynamics(t, y, tau_func, params);
@@ -52,57 +53,52 @@ av_mode = 1;
 % Initial state
 yout(1,:) = yo;
 
-% Get Jacobians
-[J,~,~] = AllLegs_contactRolling_J_and_Jdot(q0, qd0, params);
-[ml,~] = size(J);
-lambda_out = zeros(ml,ia);
-Sys_Input = zeros(ml,ia);
 
-% ------------------------- [3] Simulation Loop -------------------------
-for i = 1:ia-1
-    y = yo;
-    t = ts(i);
 
-    [k1, lambda_out(:,i), Sys_Input(:,i)] = carDynamics(t, y, tau_func, params);
-    k2 = carDynamics(t + dt/2, y + dt/2 * k1, tau_func, params);
-    k3 = carDynamics(t + dt/2, y + dt/2 * k2, tau_func, params);
-    k4 = carDynamics(t + dt, y + dt * k3, tau_func, params);
+% sim_mode = 'ode';
+sim_mode = 'RK';
 
-    Y1 = y + (dt/6) * (k1 + 2*k2 + 2*k3 + k4);
+switch sim_mode
+    case 'RK'
 
-    q  = y(1:12);
-    qd = y(13:24);
+        % Get Jacobians
+        [J,~,~] = AllLegs_contactRolling_J_and_Jdot(q0, qd0, params);
+        [ml,~] = size(J);
+        lambda_out = zeros(ml,ia);
+        Sys_Input = zeros(ml,ia);
 
-    % % === Spoke impacts ====
-    % for iwc = 1:6
-    %     if Y1(6+iwc) >= (phi/2)
-    %         switch av_mode
-    %             case 1
-    %                 Y1(6+iwc) = Y1(6+iwc) - phi;
-    %                 % Y1(12+iwc) = Y1(12+iwc) * cos(phi);
-    %             case 2
-    %                 Y1(6+iwc) = Y1(6+iwc) - phi;
-    %                 td = Theta_Plus(q,qd,params);
-    %                 Y1(12+iwc) = td(iwc);
-    %         end
-    %     elseif Y1(6+iwc) <= (-phi/2)
-    %         switch av_mode
-    %             case 1
-    %                 Y1(6+iwc) = Y1(6+iwc) + phi;
-    %                 % Y1(12+iwc) = Y1(12+iwc) * cos(phi);
-    %             case 2
-    %                 Y1(6+iwc) = Y1(6+iwc) + phi;
-    %                 td = Theta_Plus(q,qd,params);
-    %                 Y1(12+iwc) = td(iwc);
-    %         end
-    %     end
-    % end
+        % ------------------------- [3] Simulation Loop -------------------------
+        for i = 1:ia-1
+            y = yo;
+            t = ts(i);
 
-    yout(i+1,:) = Y1;
-    yo = Y1;
+            [k1, lambda_out(:,i), Sys_Input(:,i)] = carDynamics(t, y, tau_func, params);
+            k2 = carDynamics(t + dt/2, y + dt/2 * k1, tau_func, params);
+            k3 = carDynamics(t + dt/2, y + dt/2 * k2, tau_func, params);
+            k4 = carDynamics(t + dt, y + dt * k3, tau_func, params);
+
+            Y1 = y + (dt/6) * (k1 + 2*k2 + 2*k3 + k4);
+
+            q  = y(1:12);
+            qd = y(13:24);
+
+
+
+            yout(i+1,:) = Y1;
+            yo = Y1;
+        end
+
+        tout = ts;
+    case 'ode'
+
+        % Reset before starting
+        carDynamics_ODE([], [], [], [], true);  % Reset persistent vars
+
+        % Run the simulation
+        [tout, yout] = ode15s(@(t,y) carDynamics_ODE(t, y, tau_func, params), ts, yo);
+
+
 end
-
-tout = ts;
 
 %% Extract and plot
 pos      = yout(:, 1:3);
@@ -125,7 +121,7 @@ n_f = ml/6;
 for j = 1:n_f
     nexttile
     plot(tout(1:end-1), lambda_out(0+j:n_f:ml,1:end-1).','LineWidth',2);
-    xlabel('Time (s)'); ylabel('F_x (N)'); title('X-direction Contact Forces');
+    xlabel('Time (s)'); ylabel('F (N)'); title(' Contact Forces');
     legend('F_1','F_2','F_3','F_4','F_5','F_6');
     grid on;
 end
@@ -138,3 +134,16 @@ for j = 1:12
     axis tight;
     xlabel('Time (s)');
 end
+
+
+
+%% TO animate
+
+save_gif = true;  % Toggle to save as GIF
+save_vid = true; % Toggle to save as mpeg
+
+% save_gif = false;  % Toggle to save as GIF
+% save_vid = false; % Toggle to save as mpeg
+
+
+VehicleMotion_Animation;

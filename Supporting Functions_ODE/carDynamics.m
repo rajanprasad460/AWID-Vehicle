@@ -13,12 +13,13 @@ function [dy, lambda, Sys_Input] = carDynamics(t, y, tau_func, params)
 % l         = params(9);   % Length (possibly between axles or wheelbase)
 % w         = params(10);  % Width (track width or lateral offset)
 % lat_damp  = params(11);  % Lateral damping coefficient
-
-
+% roll_damp  = params(12);  % rolling damping coefficient
+% n_wheel = params(13);  % Number of wheels in the car
 
 
 lat_damp  = params(11);  % Lateral damping coefficient
-n_wheel = params(12);  % Number of wheels in the car
+roll_damp  = params(12);  % rolling damping coefficient
+n_wheel = params(13);  % Number of wheels in the car
 
 
 % Extract generalized coordinates and velocities from state vector
@@ -43,19 +44,25 @@ G = G_vector_func(q, params);
 
 % ======= Augmented appraoch  ============
 % Get Jacobians
-[J,Jdot,J_lat] = AllLegs_contactRolling_J_and_Jdot(q, qd, params);
-
-% Initialize damping torque
-tau_damping = (zeros(length(q),1));
+[J,Jdot,J_Total] = AllLegs_contactRolling_J_and_Jdot(q, qd, params);
 
 
-
-
+% Initialize total damping torque [Combined rolling + lateral]
+tau_damping = zeros(length(q), 1);
 
 for i = 1:n_wheel
-    v_lat_i = J_lat(i,:) * qd;            % scalar lateral velocity of wheel i
-    F_damp_i = -lat_damp * v_lat_i;         % damping force opposing lateral slip
-    tau_damping = tau_damping + J_lat(i,:).' * F_damp_i; % add torque contribution
+    % Lateral damping
+    v_lat_i = J_Total(3*(i-1)+2,:) * qd;
+    F_lat_i = -lat_damp * v_lat_i;
+    % tau_damping = tau_damping + J_Total(3*(i-1)+2,:).' * F_lat_i;
+
+    % Rolling damping
+    v_roll_i = J_Total(3*(i-1)+1,:) * qd;
+    F_roll_i = -roll_damp * v_roll_i;
+    % tau_damping = tau_damping + J_Total(3*(i-1)+1,:).' * F_roll_i;
+
+    tau_damping = tau_damping + J_Total(3*(i-1)+1:3*i,:).' * [F_roll_i; F_lat_i; 0];
+
 end
 
 
