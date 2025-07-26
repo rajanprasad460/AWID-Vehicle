@@ -54,6 +54,15 @@ av_mode = 1;
 yout(1,:) = yo;
 
 
+% =========  Torque to Force conversion ======
+A = (1/R)*[1 1 1 1 1 1;w -w w -w w -w];
+lb = -500*ones(nw,1);
+ub = 500*ones(nw,1);
+
+% F = [F_long;M_psi];
+tau0 = 0*ones(1,nw);
+
+
 
 % sim_mode = 'ode';
 sim_mode = 'RK';
@@ -71,6 +80,30 @@ switch sim_mode
         for i = 1:ia-1
             y = yo;
             t = ts(i);
+
+            % === PD Controller =================
+            % Errors
+            ex = 0;
+            ey = 0 - yo(6);
+            edx = 0.5 - yo(13); % Tracking a constant Velocity
+            edy = 0 - yo(18); % Yaw rate to  zero
+
+            % Gains
+            Kp = 1000;
+            Kd = 700;
+
+            % Desired inertial frame force
+            Fx = Kp * ex + Kd * edx;
+            My = Kp * ey + Kd * edy;
+
+
+            B = [Fx;My];
+            %---------------   traction optimized distributor ------
+            tau = TractionPlannar(3,A,B,lb,ub,tau0);
+            tau0 = tau';
+            tau_func = @(t) [0 0 0 0 0 0 tau.'].';
+            %----------------------------------------
+
 
             [k1, lambda_out(:,i), Sys_Input(:,i)] = carDynamics(t, y, tau_func, params);
             k2 = carDynamics(t + dt/2, y + dt/2 * k1, tau_func, params);
@@ -139,11 +172,11 @@ end
 
 %% TO animate
 
-save_gif = true;  % Toggle to save as GIF
-save_vid = true; % Toggle to save as mpeg
+% save_gif = true;  % Toggle to save as GIF
+% save_vid = true; % Toggle to save as mpeg
 
 % save_gif = false;  % Toggle to save as GIF
 % save_vid = false; % Toggle to save as mpeg
 
 
-VehicleMotion_Animation;
+% VehicleMotion_Animation;
