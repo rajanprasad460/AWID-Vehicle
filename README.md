@@ -20,17 +20,30 @@ In the thesis, **MATLAB - ADMAS** cosimulation was performed. Here I am trying t
 <table>
   <tr>
     <td align="center">
-      <img src="six_wheel_animation.gif" width="500"/><br/>
+      <img src="Output%20Results/six_wheel_animation.gif" width="500"/><br/>
       <b>No Lateral Resistance</b>
     </td>
     <td align="center">
-      <img src="six_wheel_animation-1.gif" width="500"/><br/>
+      <img src="Output%20Results/six_wheel_animation-1.gif" width="500"/><br/>
       <b>Lateral Resistance</b>
     </td>
   </tr>
 </table>
 
 
+**Without and With Rolling Resistance**
+<table>
+  <tr>
+    <td align="center">
+      <img src="Output%20Results/six_wheel_animation-1-2.gif" width="500"/><br/>
+      <b>No Rolling Resistance</b>
+    </td>
+    <td align="center">
+      <img src="Output%20Results/six_wheel_animation-1-2-3.gif" width="500"/><br/>
+      <b>Rolling Resistance</b>
+    </td>
+  </tr>
+</table>
 ---
 
 ## 📘 Project Overview
@@ -126,33 +139,42 @@ We don’t modify 'Jc' directly for damping affected motion (if lateral resistan
 | Hard constraint (no slip)         | ✅ Yes       | ❌ No                            |
 | Soft resistance (viscous damping) | ❌ No        | ✅ Yes                           |
 
+**Rolling Constraint VS Resistance**
+
+| Type        | Rolling Constraint                          | Rolling Resistance         |
+| ----------- | ------------------------------------------- | -------------------------- |
+| Nature      | Kinematic constraint                        | Dissipative force          |
+| Included in | `Jc_i` matrix                               | `τ_resist` term            |
+| Expression  | `e_rollingᵀ * J_i * q̇ - R*e_thetaᵀ*q̇ = 0` | `f = -R_roll * v_rolling`  |
+| Purpose     | No slipping forward                         | Energy loss during rolling |
 
 ---
 
-### 🧮 Viscous Damping in the Dynamic Model
+### 🧮 Combined Rolling and Lateral Damping Resistance in the Dynamic Model
+Rolling and lateral damping represent two distinct but physically important resistance forces acting on a wheeled vehicle. **Rolling resistance** arises primarily from energy losses due to deformation of the wheel and the ground at the contact patch. This effect generates a torque that opposes the wheel's rotation and is proportional to the wheel's angular velocity. On the other hand, **lateral damping** accounts for the resistance encountered when a wheel slips or skids sideways due to lateral forces—common during turning or uneven terrain contact. It produces a force opposing the lateral velocity of the wheel. Both resistances can be modeled as viscous damping effects and incorporated into the dynamic model via Jacobians that project the generalized velocity onto the respective motion directions. This provides a realistic and physically consistent way to simulate energy losses and stabilize the vehicle's behavior in dynamic simulations.
 
-In the dynamic model, the general form is:
-
-```math
-M \ddot{q} + C(q, \dot{q}) + G = \tau + J^\top \lambda
-```
-
-To incorporate **viscous damping** (e.g., lateral ground resistance for each wheel), we include an additional damping torque term:
+The dynamic model can be extended to include both **rolling resistance** and **lateral viscous damping** as additional torque terms that oppose wheel motion:
 
 ```math
 M \ddot{q} + C(q, \dot{q}) + G + \tau_{\text{damping}} = \tau + J^\top \lambda
 ```
-
 Where the damping torque is given by:
 
 ```math
-\tau_{\text{damping}} = \sum_{\text{wheels}} J_{\text{lat}, i}^\top \left( -b_i \cdot J_{\text{lat}, i} \dot{q} \right)
+\tau_{\text{damping}} = \sum_{\text{wheels}} J_{\text{roll}, i}^\top \left( -roll_i \cdot J_{\text{roll}, i} \dot{q} \right) + \sum_{\text{wheels}} J_{\text{lat}, i}^\top \left( -b_i \cdot J_{\text{lat}, i} \dot{q} \right)
 ```
 
-* $J_{\text{lat}, i}$: Jacobian projecting velocity onto the lateral direction of wheel $i$
-* $b_i$: Damping coefficient (viscous resistance) for wheel $i$
 
-This approach **introduces lateral resistance** in a physically consistent way, without violating the structure of the dynamic equations.
+Where:
+
+* $J_{\text{roll}, i}$: Jacobian projecting generalized velocities onto the rolling angular velocity of wheel $i$
+* $J_{\text{lat}, i}$: Jacobian projecting generalized velocities onto the lateral linear velocity of wheel $i$
+* $roll_i$: Rolling resistance coefficient (viscous damping coefficient) for wheel $i$
+* $b_i$: Lateral damping coefficient (viscous resistance) for wheel $i$
+* $\dot{q}$: Generalized velocity vector
+
+This unified formulation models both rolling and lateral resistances as viscous damping torques, ensuring realistic energy dissipation while preserving the physical consistency of the dynamic equations.
+
 
 ---
 
