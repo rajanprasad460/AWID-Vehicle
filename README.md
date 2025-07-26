@@ -232,7 +232,7 @@ If you use this code or theory in your research, please consider citing the foll
    git clone https://github.com/rajanprasad460/AWID-Vehicle.git
    ```
 2. Open MATLAB and navigate to the project folder.  
-3. Opem:  
+3. Open:  
    ```matlab
    Six_Wheel_based_Model.prj
    ```
