@@ -232,7 +232,11 @@ If you use this code or theory in your research, please consider citing the foll
    git clone https://github.com/rajanprasad460/AWID-Vehicle.git
    ```
 2. Open MATLAB and navigate to the project folder.  
-3. Run:  
+3. Opem:  
    ```matlab
-   Car_simulator
+   Six_Wheel_based_Model.prj
+   ```
+4. Run:  
+   ```matlab
+   Car_simulator.m
    ```
