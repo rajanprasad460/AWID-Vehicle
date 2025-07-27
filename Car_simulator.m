@@ -11,8 +11,8 @@ g = 9.81;           % Gravity (m/s^2)
 R = 0.3;            % Wheel radius (m)
 l = 1.2;            % Half length of vehicle (front-rear)
 w = 0.75;           % Half width of vehicle (left-right)
-lat_damp = -800*0;    % N·s/m, per wheel lateral damping coefficient
-roll_damp = -10*1;      % damp_roll (N·s/m) per wheel  [5 for general, 10 for roungh]
+lat_damp = -800*1;  % N·s/m, per wheel lateral damping coefficient
+roll_damp = -10*1;  % damp_roll (N·s/m) per wheel  [5 for general, 10 for roungh]
 n_wheel = 6;
 
 % ====== Spoke parameters ======
@@ -42,7 +42,7 @@ f = @(t, y) carDynamics(t, y, tau_func, params);
 
 % Time simulation setup
 dt = 0.01;
-t_end = 10;
+t_end = 20;
 ts = 0:dt:t_end;
 ia = length(ts);
 yout = zeros(length(ts),24);
@@ -61,7 +61,7 @@ ub = 500*ones(nw,1);
 
 % F = [F_long;M_psi];
 tau0 = 0*ones(1,nw);
-
+qdd = zeros(size(q0));
 
 
 % sim_mode = 'ode';
@@ -80,24 +80,53 @@ switch sim_mode
         for i = 1:ia-1
             y = yo;
             t = ts(i);
+            q  = y(1:12);
+            qd = y(13:24);
 
+
+
+            R_body = combinedRotationMatrix(yo(4),yo(5),yo(6));
+            % R_body = eye(3);
+
+            velo_b = R_body*yo(13:15);
+            w_body = R_body*yo(16:18);
             % === PD Controller =================
             % Errors
-            ex = 0;
-            ey = 0;
-            edx = 2 - yo(13); % Tracking a constant Velocity
-            edy = 0 - yo(18); % Yaw rate to  zero
+            % Errors
+            t_vx = 1;
+            t_yaw_z = 0;
+
+            ex   = (0.2 - velo_b(1))*t_vx;            % [m/s]
+            edx  = (0 - qdd(1))*t_vx;          % [m/s/s]
+
+            e_psi  = (-0.8 - w_body(3))*t_yaw_z ; % [rad/s]
+            ed_psi = (0 - qdd(6))*t_yaw_z;    % [rad/s/s]
 
             % Gains
-            Kp = 1000;
-            Kd = 1000;
+            % Kp_lin = 160;   % Proportional gain for x
+            % Kd_lin = 40;   % Derivative gain for x
+            % 
+            % Kp_yaw = 160;    % Proportional gain for yaw
+            % Kd_yaw = 40;   % Derivative gain for yaw rate
+            % 
+            % 
+            % 
+            % % Controls
+            % Fx = Kp_lin * ex + Kd_lin * edx;
+            % Mz = Kp_yaw * e_psi + Kd_yaw * ed_psi;
 
-            % Desired inertial frame force
-            Fx = Kp * ex + Kd * edx;
-            My = Kp * ey + Kd * edy;
+            % % Final control vector
+            % B = [Fx; Mz];   % Force and yaw moment
+
+            B = 2000*eye(2)*[ex;e_psi] + 800*eye(2)*[edx;ed_psi];
 
 
-            B = [Fx;My];
+            % Subtract the damping influences
+            % [J,Jdot,J_Total] = AllLegs_contactRolling_J_and_Jdot(q, qd, params);
+            % tau_damping = DampingInfluence(q,qd,J_Total,params);
+            % B = B + A*tau_damping;
+
+
             %---------------   traction optimized distributor ------
             tau = TractionPlannar(3,A,B,lb,ub,tau0);
             tau0 = tau';
@@ -110,10 +139,10 @@ switch sim_mode
             k3 = carDynamics(t + dt/2, y + dt/2 * k2, tau_func, params);
             k4 = carDynamics(t + dt, y + dt * k3, tau_func, params);
 
-            Y1 = y + (dt/6) * (k1 + 2*k2 + 2*k3 + k4);
+            qdd = (dt/6) * (k1 + 2*k2 + 2*k3 + k4);
+            Y1 = y + qdd;
 
-            q  = y(1:12);
-            qd = y(13:24);
+
 
 
 
@@ -121,7 +150,7 @@ switch sim_mode
             yo = Y1;
 
 
-            progressupdater(i,ia-1,'Simulating..');
+            % progressupdater(i,ia-1,'Simulating..');
         end
 
         tout = ts;
@@ -150,6 +179,21 @@ plotGroup(tout, wheels, {'$\theta_1$', '$\theta_2$', '$\theta_3$', '$\theta_4$',
 plotGroup(tout, vel_lin, {'$\dot{x}$', '$\dot{y}$', '$\dot{z}$'}, 'Linear Velocities (m/s)');
 plotGroup(tout, vel_ang, {'$\dot{\phi}$', '$\dot{\theta}$', '$\dot{\psi}$'}, 'Angular Velocities (rad/s)');
 plotGroup(tout, vel_wheel, {'$\dot{\theta}_1$', '$\dot{\theta}_2$', '$\dot{\theta}_3$', '$\dot{\theta}_4$', '$\dot{\theta}_5$', '$\dot{\theta}_6$'}, 'Wheel Angular Velocities (rad/s)');
+
+
+%% Plot x vs y
+figure
+plot3(pos(:,1), pos(:,2), pos(:,3), 'LineWidth', 2)
+xlabel('X [m]')
+ylabel('Y [m]')
+zlabel('Z [m]')
+grid on
+axis equal
+
+% Set view to XY plane (looking from above, along Z-axis)
+view(0, 90)
+title('Trajectory in XY Plane')
+
 
 %% Reaction force plotting
 figure;
