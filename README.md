@@ -198,6 +198,42 @@ $M = K_p^w (w_{\text{des}} - w) + K_d^{w} (\dot{w}_{\text{des}} - \dot{w})$
 However, these are working only for either linear or yaw, not in combined for now.
 
 
+The above force and moment are mapped to wheel traction forces using the following relation:
+
+$$
+A = \frac{1}{R}
+\begin{bmatrix}
+1 & 1 & 1 & 1 & 1 & 1 \\
+w & -w & w & -w & w & -w
+\end{bmatrix}
+$$
+
+where
+
+$$
+A \times \text{Traction} = B
+$$
+
+and
+
+$$
+B =
+\begin{bmatrix}
+F_x \\
+M
+\end{bmatrix}
+$$
+
+Here,  
+- $R$ is the wheel radius,  
+- $w$ is the half track width (distance from vehicle center to each wheel laterally),  
+- $\text{Traction} = [T_1, T_2, T_3, T_4, T_5, T_6]^T$ are the traction forces at each of the six wheels,  
+- $F_x$ is the desired longitudinal force, and  
+- $M$ is the desired yaw moment.
+
+
+The traction forces are determined by solving a quadratic programming (QP) optimization problem. Please refer to the reference mentioned in the page (Masters Paper) for details on the formulation and solution approach to obtain the traction forces.
+
 ---
 
 ## 📂 Exported MATLAB Functions
