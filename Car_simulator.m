@@ -84,13 +84,13 @@ switch sim_mode
             % === PD Controller =================
             % Errors
             ex = 0;
-            ey = 0 - yo(6);
-            edx = 0.5 - yo(13); % Tracking a constant Velocity
+            ey = 0;
+            edx = 2 - yo(13); % Tracking a constant Velocity
             edy = 0 - yo(18); % Yaw rate to  zero
 
             % Gains
             Kp = 1000;
-            Kd = 700;
+            Kd = 1000;
 
             % Desired inertial frame force
             Fx = Kp * ex + Kd * edx;
@@ -119,6 +119,9 @@ switch sim_mode
 
             yout(i+1,:) = Y1;
             yo = Y1;
+
+
+            progressupdater(i,ia-1,'Simulating..');
         end
 
         tout = ts;
@@ -175,8 +178,8 @@ end
 % save_gif = true;  % Toggle to save as GIF
 % save_vid = true; % Toggle to save as mpeg
 
-% save_gif = false;  % Toggle to save as GIF
-% save_vid = false; % Toggle to save as mpeg
+save_gif = false;  % Toggle to save as GIF
+save_vid = false; % Toggle to save as mpeg
 
 
 % VehicleMotion_Animation;
