@@ -180,6 +180,24 @@ This unified formulation models both rolling and lateral resistances as viscous 
 
 
 
+### 🎯 Proportional-Derivative (PD) Control for Force and Moment Estimation
+
+In dynamic control of wheeled vehicles, a **Proportional-Derivative (PD) controller** is used to estimate the required **net force** ($F$) and **moment** ($M$) to track desired motion, such as forward velocity and yaw rate.
+
+The controller computes:
+
+
+Force control (linear velocity):
+
+$F_x = K_p^v (v_{\text{des}} - v) + K_d^{v} (\dot{v}_{\text{des}} - \dot{v})$
+
+Moment control (yaw rate):
+
+$M = K_p^w (w_{\text{des}} - w) + K_d^{w} (\dot{w}_{\text{des}} - \dot{w})$
+
+However, these are working only for either linear or yaw, not in combined for now.
+
+
 ---
 
 ## 📂 Exported MATLAB Functions
