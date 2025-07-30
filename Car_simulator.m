@@ -16,7 +16,7 @@ roll_damp = -10*1;  % damp_roll (N·s/m) per wheel  [5 for general, 10 for roung
 n_wheel = 6;
 
 % ====== Spoke parameters ======
-nw = 6;      % Number of spokes
+nw = 5;      % Number of spokes
 % Geometry of spokes
 ang_w = 0:2*pi/nw:(2*pi - 2*pi/nw);  % Angles between spokes (rad)
 ang_d = 0:360/nw:(360 - 360/nw);    % Degrees between spokes
