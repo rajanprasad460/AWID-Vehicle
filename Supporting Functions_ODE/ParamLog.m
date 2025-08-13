@@ -11,5 +11,6 @@ classdef ParamLog < handle
         tau0 = [0;0;0;0;0;0]' % Torque of motors
         tau = [0;0;0;0;0;0]
         track = 1
+        dy = zeros(24,1)
     end
 end

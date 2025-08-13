@@ -92,17 +92,18 @@ lambda = solution(13:end);  % Contact forces lambda
 
 Sys_Input = J'*lambda;
 
-% Log into parameter object
-p.lambda(:, end+1) = lambda;
-p.Sys_Input(:, end+1) = Sys_Input;
-p.t(end+1) = t;
+
 
 
 % Compose derivative of state vector
 dy = [qd; qdd];
 
 
-
+% Log into parameter object
+p.lambda(:, end+1) = lambda;
+p.Sys_Input(:, end+1) = Sys_Input;
+p.t(end+1) = t;
+p.dy = dy;
 
 
 

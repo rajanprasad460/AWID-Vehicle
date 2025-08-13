@@ -35,7 +35,7 @@ yo = [q0; qd0];  % Combine initial positions and velocities
 f = @(t, y) carDynamics(t, y, tau_func, params);
 
 % Time simulation setup
-tspan = [0 5];
+tspan = [0 10];
 
 
 
