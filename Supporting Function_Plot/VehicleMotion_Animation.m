@@ -1,7 +1,7 @@
 % === BEGIN MODIFIED ANIMATION CODE FOR SIX-WHEEL VEHICLE WITH TRAILS, TORQUE, EXPORT ===
 
-nw = 6;  % Total wheels
-wheel_radius = 0.3;
+nw = p.n_wheel;  % Total wheels
+wheel_radius = p.R;
 wheel_width = 0.15;
 car_height = 0.05;
 sim_speed = 4;
@@ -182,6 +182,13 @@ if save_vid
     open(v);
     writeVideo(v,im);
     close(v);
+
+
+    pause(1)
+    % Open the created video with player to show frame by frame
+
+    implay(f_filename);  % or 'my_animation.avi'
+
 end
 
 %% ------------------------- [9] GIF Export -------------------------
@@ -203,9 +210,4 @@ if save_gif
     end
 
 end
-
-%%
-% Open the created video with player to show frame by frame
-
-% implay(strcat(filename,'.avi'));  % or 'my_animation.avi'
 

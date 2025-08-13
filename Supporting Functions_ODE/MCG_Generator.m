@@ -61,7 +61,7 @@ hub_coords = {
 % Transformation
 p_body = q(1:3);
 R_body = combinedRotationMatrix(phi, theta, psi);
-
+R_body = eye(3);
 
 tau = sym(zeros(n,1));
 T_wheel_trans = 0;
@@ -73,6 +73,11 @@ z_all = sym(zeros(n,1));
 e_rolling = R_body * [1; 0; 0];
 e_lateral = R_body * [0; 1; 0];
 e_vertical = R_body * [0; 0; 1];
+
+e_theta_x = zeros(1,nq);
+e_theta_x(1) = 1;
+
+
 % Filter by index if needed (e.g., only rolling, or all 3 constraints)
 key_idx = [1 3];
 
@@ -175,7 +180,7 @@ matlabFunction(M, 'Vars', {vars_q, params}, 'File', 'M_matrix_func');
 matlabFunction(C, 'Vars', {vars_q, vars_qd, params}, 'File', 'C_vector_func');
 matlabFunction(G, 'Vars', {vars_q, params}, 'File', 'G_vector_func');
 
-matlabFunction(Jc_all, Jdot_c_all, Jc_Total, ...
+matlabFunction(Jc_all, Jdot_c_all, Jc_Total, key_idx, ...
     'Vars', {vars_q, vars_qd, params}, ...
     'File', 'AllLegs_contactRolling_J_and_Jdot', ...
-    'Outputs', {'Jc', 'Jdot_c', 'Jc_Total'});
+    'Outputs', {'Jc', 'Jdot_c', 'Jc_Total', 'key_idx'});

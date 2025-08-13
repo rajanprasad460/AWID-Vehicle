@@ -1,4 +1,4 @@
-function [dy, lambda, Sys_Input] = carDynamics(t, y, tau_func, params)
+function dy = carDynamics(t, y, p, tau_func, params, reset)
 % Define symbolic variable ordering for q and qd (must match symbolic generation)
 % vars_q  = {'x', 'y', 'z', 'phi', 'theta', 'psi', 'th1', 'th2', 'th3', 'th4'};
 % vars_qd = {'xd', 'yd', 'zd', 'phid', 'thetad', 'psid', 'th1d', 'th2d', 'th3d', 'th4d'};
@@ -24,13 +24,28 @@ function [dy, lambda, Sys_Input] = carDynamics(t, y, tau_func, params)
 % n_wheel = params(13);  % Number of wheels in the car
 
 
+
+% === Persistent variables ===
+% Used for timing logs, energy tracking, and cable force history
+persistent lastTime
+
+% === Reset persistent state ===
+if nargin > 5 && reset
+    lastTime = [];
+    return
+end
+% === Initialize persistent variables ===
+if isempty(lastTime)
+    lastTime = tic;   % Start timer
+end
+
 % Extract generalized coordinates and velocities from state vector
 q  = y(1:12);
 qd = y(13:24);
 
 
 % Get input torques at current time
-Tau = tau_func(t);
+Tau = tau_func(t, y);
 
 % Evaluate mass matrix M(q)
 M = M_matrix_func(q, params);
@@ -74,10 +89,31 @@ solution = LHS \ rhs;
 qdd = solution(1:12);
 lambda = solution(13:end);  % Contact forces lambda
 
+
 Sys_Input = J'*lambda;
+
+% Log into parameter object
+p.lambda(:, end+1) = lambda;
+p.Sys_Input(:, end+1) = Sys_Input;
+p.t(end+1) = t;
+
 
 % Compose derivative of state vector
 dy = [qd; qdd];
+
+
+
+
+
+
+
+
+% === Display simulation progress ===
+if toc(lastTime) > 2
+    fprintf('Time: %.2f s | Elapsed Time: %.2f s\n', t, toc(lastTime));
+    lastTime = tic;
+end
+
 end
 
 
