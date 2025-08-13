@@ -61,7 +61,7 @@ hub_coords = {
 % Transformation
 p_body = q(1:3);
 R_body = combinedRotationMatrix(phi, theta, psi);
-R_body = eye(3);
+% R_body = eye(3);
 
 tau = sym(zeros(n,1));
 T_wheel_trans = 0;

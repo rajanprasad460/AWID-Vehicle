@@ -31,8 +31,8 @@ function tau_out = PD_Controller(t, y, p)
           w,  -w,  w, -w , w, -w];  % Yaw moment contribution
 
     % Torque limits (N·m)
-    lb = -1000 * ones(n_wheel, 1);
-    ub =  1000 * ones(n_wheel, 1);
+    lb = -215 * ones(n_wheel, 1);
+    ub =  215 * ones(n_wheel, 1);
 
     % === Body rotation ===
     % Transform global velocities into body frame
@@ -50,13 +50,13 @@ function tau_out = PD_Controller(t, y, p)
     edx  = (0.0 - qd(6))      * t_vx; % m/s² error (should use accel est.)
 
     % Yaw rate tracking error (body-z angular velocity)
-    e_psi  = (-0.8 - w_body(3)) * t_yaw_z; % rad/s error
+    e_psi  = (-1.2 - w_body(3)) * t_yaw_z; % rad/s error
     ed_psi = (0.0 - qd(6))     * t_yaw_z; % rad/s² error
 
     % === PD Control Law ===
     % B = [Fx; Mz], where Fx = longitudinal force, Mz = yaw moment
-    Kp = 2000 * eye(2);
-    Kd =  800 * eye(2);
+    Kp = 20000 * eye(2);
+    Kd =  8000 * eye(2);
     B  = Kp * [ex; e_psi] + Kd * [edx; ed_psi];
 
     % === Torque allocation (traction-optimized) ===

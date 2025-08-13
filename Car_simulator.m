@@ -9,8 +9,8 @@ Ibx = 400; Iby = 1300; Ibz = 1800;  % Moments of inertia (kg*m^2)
 Iw = 2;             % Wheel rotational inertia (kg*m^2)
 g = 9.81;           % Gravity (m/s^2)
 R = 0.3;            % Wheel radius (m)
-l = 1.2;            % Half length of vehicle (front-rear)
-w = 0.75;           % Half width of vehicle (left-right)
+l = 1;              % Half length of vehicle (front-rear)
+w = 0.5;           % Half width of vehicle (left-right)
 lat_damp = -800*1;  % N·s/m, per wheel lateral damping coefficient
 roll_damp = -10*1;  % damp_roll (N·s/m) per wheel  [5 for general, 10 for roungh]
 n_wheel = 6;
@@ -29,14 +29,13 @@ yo = [q0; qd0];  % Combine initial positions and velocities
 
 
 
-% Torque function (adjusted to 6 wheels)
-tau_func = @(t) 10*[0;0;0;0;0;0; 1; 1; 1; 1; 1; 1];
+
 
 % ODE function (carDynamics must compute dy = [qd; qdd])
 f = @(t, y) carDynamics(t, y, tau_func, params);
 
 % Time simulation setup
-tspan = [0 10];
+tspan = [0 5];
 
 
 
@@ -56,7 +55,7 @@ p.Sys_Input = zeros(length(q0),1);
 p.R = R;
 p.w = w;
 p.n_wheel = n_wheel;
-
+p.track = 1; % if 0, no tracking is done
 
 %%  Torque Input to the Model ========
 % PD controller Torque
@@ -64,8 +63,12 @@ p.n_wheel = n_wheel;
 % Apply forward torque to all wheels
 % tau = @(t, y) 5*[0;0;0;0;0;0;1;1;1;1;1;1];
 
-tau_func = @(t,y) PD_Controller(t, y, p);
-
+if p.track == 1
+    tau_func = @(t,y) PD_Controller(t, y, p);
+else
+    % Torque function (adjusted to 6 wheels)
+    tau_func = @(t,y) 30*[0;0;0;0;0;0; 1; 1; 1; 1; 1; 1];
+end
 %%  Simulation Loop  
 solver_mode = 'ODE';
 % solver_mode = 'RK';
@@ -182,7 +185,12 @@ for i = 1:length(t_vec)
 
         lambda_out(:,i) = p.lambda(:,idx(min(1,length(idx))));
         Sys_Input(:, i) = p.Sys_Input(:, idx(1));
-        Tau_in(:, i) = p.tau(:, idx(1));
+        if p.track == 1
+            Tau_in(:, i) = p.tau(:, idx(1));
+        else
+            tor = tau_func([],[]);
+            Tau_in(:, i) = tor(7:7+p.n_wheel-1);
+        end
     else
         lambda_out(:,i) = NaN;  % or keep empty
         Sys_Input(:, i) = NaN;

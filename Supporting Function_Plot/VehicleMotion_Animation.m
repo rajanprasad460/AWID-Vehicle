@@ -31,6 +31,7 @@ Nwheel = 36;  % Wheel rendering resolution
 wheel_circ_y = (ones(size(wheel_circ_x)) .* [0; wheel_width]) - wheel_width/2;
 
 fig = figure('Name', '6-Wheel Vehicle Simulation','units','normalized','outerposition',[0 0 1 1]);
+rotate3d on;
 hold on;
 
 % === Store trails ===
