@@ -61,7 +61,7 @@ G = G_vector_func(q, params);
 
 % ======= Augmented appraoch  ============
 % Get Jacobians
-[J,Jdot,J_Total] = AllLegs_contactRolling_J_and_Jdot(q, qd, params);
+[J,Jdot,J_Total,~] = AllLegs_contactRolling_J_and_Jdot(q, qd, params);
 
 
 % Initialize total damping torque [Combined rolling + lateral]
